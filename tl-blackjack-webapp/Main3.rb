@@ -61,10 +61,10 @@ helpers do
     @error = "<strong>#{session[:player_name]} loses.</strong> #{msg}"
   end
 
-  def tie!(msg)
+  def push!(msg)
     @play_again = true
     @show_hit_or_stay_buttons = false
-    @success = "<strong>It's a tie!</strong> #{msg}"
+    @success = "<strong>Push</strong> #{msg}"
   end
 end
 
@@ -118,9 +118,9 @@ post '/game/player/hit' do
 
   player_total = calculate_total(session[:player_cards])
   if player_total == BLACKJACK_AMOUNT
-    winner!("#{session[:player_name]} hit blackjack.")
+    @success = "#{session[:player_name]} hit blackjack."
   elsif player_total > BLACKJACK_AMOUNT
-    loser!("It looks like #{session[:player_name]} busted at #{player_total}.")
+    @error = "It looks like #{session[:player_name]} busted at #{player_total}."
   end
 
   erb :game
@@ -140,9 +140,9 @@ get '/game/dealer' do
   dealer_total = calculate_total(session[:dealer_cards])
 
   if dealer_total == BLACKJACK_AMOUNT
-    loser!("Dealer hit blackjack.")
+    @error = "Dealer hit blackjack."
   elsif dealer_total > BLACKJACK_AMOUNT
-    winner!("Dealer busted at #{dealer_total}.")
+    @success = "Dealer busted at #{dealer_total}."
   elsif dealer_total >= DEALER_MIN_HIT #17, 18, 19, 20
     # dealer stays
     redirect '/game/compare'
@@ -166,11 +166,11 @@ get '/game/compare' do
   dealer_total = calculate_total(session[:dealer_cards])
 
   if player_total < dealer_total
-    loser!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.")
+    loser!("#{session[:player_name]} has #{player_total}, and the dealer has #{dealer_total}.")
   elsif player_total > dealer_total
-    winner!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.")
+    winner!("#{session[:player_name]} has #{player_total}, and the dealer has #{dealer_total}.")
   else
-    tie!("Both #{session[:player_name]} and the dealer stayed at #{player_total}.")
+    push!("Push.")
   end
 
   erb :game
